@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MainApp());
@@ -21,15 +22,22 @@ class HuertoPage extends StatefulWidget {
 
 class _HuertoPageState extends State<HuertoPage> {
   final controller = TextEditingController();
-  final List<String> cultivos = [];
+  List<String> cultivos = [];
 
-  void agregar() {
+  @override
+  void initState() {
+    super.initState();
+    cargar();
+  }
+
+  Future<void> agregar() async {
     final texto = controller.text.trim();
     if (texto.isEmpty) return;
     setState(() {
       cultivos.add(texto);
       controller.clear();
     });
+    await guardar();
   }
 
   @override
@@ -69,5 +77,17 @@ class _HuertoPageState extends State<HuertoPage> {
         ),
       ),
     );
+  }
+
+  Future<void> cargar() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      cultivos = prefs.getStringList('cultivos')??[];
+    });
+  }
+
+  Future<void> guardar() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('cultivos', cultivos);
   }
 }
